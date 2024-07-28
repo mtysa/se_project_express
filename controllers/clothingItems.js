@@ -1,6 +1,7 @@
 const Item = require("../models/clothingItem");
 const {
   invalidData,
+  idNotFound,
   defaultError,
   defaultErrorMessage,
 } = require("../utils/errors");
@@ -9,11 +10,8 @@ const getItems = (req, res) => {
   Item.find({})
     .then((items) => res.send({ data: items }))
     .catch((err) => {
-      if (err.name === "CastError") {
-        res.status(defaultError).send({ defaultErrorMessage });
-      } else {
-        res.status(defaultError).send({ defaultErrorMessage });
-      }
+      console.error(err);
+      res.status(defaultError).send({ defaultErrorMessage });
     });
 };
 
@@ -22,25 +20,27 @@ const createItem = (req, res) => {
   Item.create({ name, weather, imageUrl })
     .then((item) => res.send({ data: item }))
     .catch((err) => {
-      if (err.name === "ValidationError") {
-        res
-          .status(invalidData)
-          .send({ message: "An error has occured creating item." });
-      } else {
-        res.status(defaultError).send({ defaultErrorMessage });
-      }
+      console.error(err);
+      res
+        .status(invalidData)
+        .send({ message: "An error has occurred creating item." });
     });
 };
 
 const deleteItem = (req, res) => {
   Item.findByIdAndDelete(req.params.itemId)
     .orFail()
-    .then(() => res.send({}))
+    .then((item) => res.send(item))
     .catch((err) => {
-      if (err.name === "DocumentNotFoundError") {
+      if (err.name === "ValidationError" || err.name === "CastError") {
         res
           .status(invalidData)
-          .send({ message: "An error has occured deleting item." });
+          .send({ message: "An error has occurred deleting item." });
+      }
+      if (err.name === "DocumentNotFoundError") {
+        res
+          .status(idNotFound)
+          .send({ message: "An error has occurred deleting item." });
       } else {
         res.status(defaultError).send({ defaultErrorMessage });
       }
@@ -55,12 +55,17 @@ const likeItem = (req, res) => {
     { new: true }
   )
     .orFail()
-    .then((item) => res.send({ data: item }))
+    .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
-      if (err.name === "DocumentNotFoundError") {
+      if (err.name === "CastError") {
         res
           .status(invalidData)
-          .send({ message: "An error has occured liking item." });
+          .send({ message: "An error has occurred liking item." });
+      }
+      if (err.name === "DocumentNotFoundError") {
+        res
+          .status(idNotFound)
+          .send({ message: "An error has occurred liking item." });
       } else {
         res.status(defaultError).send({ defaultErrorMessage });
       }
@@ -75,12 +80,17 @@ const unlikeItem = (req, res) => {
     { new: true }
   )
     .orFail()
-    .then((item) => res.send({ data: item }))
+    .then((item) => res.status(200).send({ data: item }))
     .catch((err) => {
-      if (err.name === "DocumentNotFoundError") {
+      if (err.name === "CastError") {
         res
           .status(invalidData)
-          .send({ message: "An error has occured unliking item." });
+          .send({ message: "An error has occurred unliking item." });
+      }
+      if (err.name === "DocumentNotFoundError") {
+        res
+          .status(idNotFound)
+          .send({ message: "An error has occurred unliking item." });
       } else {
         res.status(defaultError).send({ defaultErrorMessage });
       }
