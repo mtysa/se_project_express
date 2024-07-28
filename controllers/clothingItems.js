@@ -17,13 +17,16 @@ const getItems = (req, res) => {
 
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
-  Item.create({ name, weather, imageUrl })
+  Item.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => res.send({ data: item }))
     .catch((err) => {
-      console.error(err);
-      res
-        .status(invalidData)
-        .send({ message: "An error has occurred creating item." });
+      if (err.name === "ValidationError") {
+        res
+          .status(invalidData)
+          .send({ message: "An error has occurred creating item." });
+      } else {
+        res.status(defaultError).send({ defaultErrorMessage });
+      }
     });
 };
 

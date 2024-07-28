@@ -13,9 +13,11 @@ const getUsers = (req, res) => {
 };
 
 const getUser = (req, res) => {
-  User.findById(req.params.id)
+  const { userId } = req.params.id;
+
+  User.findById(userId)
     .orFail()
-    .then((user) => res.status(200).send({ data: user }))
+    .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === "ValidationError" || err.name === "CastError") {
         res
