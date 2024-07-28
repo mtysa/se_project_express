@@ -11,6 +11,8 @@ const getItems = (req, res) => {
     .catch((err) => {
       if (err.name === "CastError") {
         res.status(defaultError).send({ defaultErrorMessage });
+      } else {
+        res.status(defaultError).send({ defaultErrorMessage });
       }
     });
 };
@@ -24,6 +26,8 @@ const createItem = (req, res) => {
         res
           .status(invalidData)
           .send({ message: "An error has occured creating item." });
+      } else {
+        res.status(defaultError).send({ defaultErrorMessage });
       }
     });
 };
@@ -37,6 +41,8 @@ const deleteItem = (req, res) => {
         res
           .status(invalidData)
           .send({ message: "An error has occured deleting item." });
+      } else {
+        res.status(defaultError).send({ defaultErrorMessage });
       }
     });
 };
@@ -55,6 +61,8 @@ const likeItem = (req, res) => {
         res
           .status(invalidData)
           .send({ message: "An error has occured liking item." });
+      } else {
+        res.status(defaultError).send({ defaultErrorMessage });
       }
     });
 };
@@ -73,6 +81,8 @@ const unlikeItem = (req, res) => {
         res
           .status(invalidData)
           .send({ message: "An error has occured unliking item." });
+      } else {
+        res.status(defaultError).send({ defaultErrorMessage });
       }
     });
 };

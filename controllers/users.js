@@ -12,6 +12,8 @@ const getUsers = (req, res) => {
     .catch((err) => {
       if (err.name === "CastError") {
         res.status(defaultError).send({ defaultErrorMessage });
+      } else {
+        res.status(defaultError).send({ defaultErrorMessage });
       }
     });
 };
@@ -25,6 +27,8 @@ const getUser = (req, res) => {
         res
           .status(idNotFound)
           .send({ message: "An error has occured with the requested ID." });
+      } else {
+        res.status(defaultError).send({ defaultErrorMessage });
       }
     });
 };
