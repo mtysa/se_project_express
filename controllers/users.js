@@ -9,18 +9,24 @@ const {
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch((err) => res.status(defaultError).send({ defaultErrorMessage }));
+    .catch((err) => {
+      if (err.name === "CastError") {
+        res.status(defaultError).send({ defaultErrorMessage });
+      }
+    });
 };
 
 const getUser = (req, res) => {
   User.findById(req.params.id)
     .orFail()
     .then((user) => res.status(200).send({ data: user }))
-    .catch((err) =>
-      res
-        .status(idNotFound)
-        .send({ message: "An error has occured with the requested ID." })
-    );
+    .catch((err) => {
+      if (err.name === "CastError") {
+        res
+          .status(idNotFound)
+          .send({ message: "An error has occured with the requested ID." });
+      }
+    });
 };
 
 const createUser = (req, res) => {
@@ -31,7 +37,7 @@ const createUser = (req, res) => {
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        return res
+        res
           .status(invalidData)
           .send({ message: "An error has occured creating user." });
       } else {

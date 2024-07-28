@@ -1,42 +1,47 @@
-
 const Item = require("../models/clothingItem");
 const {
   invalidData,
   defaultError,
-  idNotFound,
   defaultErrorMessage,
 } = require("../utils/errors");
 
 const getItems = (req, res) => {
-  console.log(res);
   Item.find({})
     .then((items) => res.send({ data: items }))
-    .catch((err) => res.status(defaultError).send({ defaultErrorMessage }));
+    .catch((err) => {
+      if (err.name === "CastError") {
+        res.status(defaultError).send({ defaultErrorMessage });
+      }
+    });
 };
 
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
   Item.create({ name, weather, imageUrl })
     .then((item) => res.send({ data: item }))
-    .catch((err) =>
-      res
-        .status(invalidData)
-        .send({ message: "An error has occured creating item." })
-    );
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        res
+          .status(invalidData)
+          .send({ message: "An error has occured creating item." });
+      }
+    });
 };
 
 const deleteItem = (req, res) => {
   Item.findByIdAndDelete(req.params.itemId)
     .orFail()
-    .then((item) => res.send({}))
-    .catch((err) =>
-      res
-        .status(invalidData)
-        .send({ message: "An error has occured deleting item." })
-    );
+    .then(() => res.send({}))
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError") {
+        res
+          .status(invalidData)
+          .send({ message: "An error has occured deleting item." });
+      }
+    });
 };
 
-//LIKES
+// LIKES
 const likeItem = (req, res) => {
   Item.findByIdAndUpdate(
     req.params.itemId,
@@ -45,14 +50,16 @@ const likeItem = (req, res) => {
   )
     .orFail()
     .then((item) => res.send({ data: item }))
-    .catch((err) =>
-      res
-        .status(invalidData)
-        .send({ message: "An error has occured liking item." })
-    );
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError") {
+        res
+          .status(invalidData)
+          .send({ message: "An error has occured liking item." });
+      }
+    });
 };
 
-//UNLIKE
+// UNLIKE
 const unlikeItem = (req, res) => {
   Item.findByIdAndUpdate(
     req.params.itemId,
@@ -61,11 +68,13 @@ const unlikeItem = (req, res) => {
   )
     .orFail()
     .then((item) => res.send({ data: item }))
-    .catch((err) =>
-      res
-        .status(invalidData)
-        .send({ message: "An error has occured unliking item." })
-    );
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError") {
+        res
+          .status(invalidData)
+          .send({ message: "An error has occured unliking item." });
+      }
+    });
 };
 
 module.exports = { getItems, createItem, deleteItem, likeItem, unlikeItem };
