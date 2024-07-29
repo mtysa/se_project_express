@@ -13,7 +13,7 @@ const getUsers = (req, res) => {
 };
 
 const getUser = (req, res) => {
-  const { userId } = req.params.id;
+  const { userId } = req.params;
 
   User.findById(userId)
     .orFail()
