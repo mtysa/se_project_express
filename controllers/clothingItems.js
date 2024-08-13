@@ -4,6 +4,7 @@ const {
   idNotFound,
   defaultError,
   defaultErrorMessage,
+  forbiddenError,
 } = require("../utils/errors");
 
 const getItems = (req, res) => {
@@ -31,9 +32,19 @@ const createItem = (req, res) => {
 };
 
 const deleteItem = (req, res) => {
+  const { userId } = req.params._id;
+
   Item.findByIdAndDelete(req.params.itemId)
     .orFail()
-    .then((item) => res.send(item))
+    .then((item) => {
+      if (item.owner.toString() !== userId) {
+        res
+          .status(forbiddenError)
+          .send({ message: "You do not have permission to delete this item." });
+      } else {
+        res.send(item);
+      }
+    })
     .catch((err) => {
       if (err.name === "ValidationError" || err.name === "CastError") {
         res
