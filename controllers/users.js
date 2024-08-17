@@ -7,17 +7,12 @@ const {
   defaultError,
   defaultErrorMessage,
   unauthorizedError,
+  conflictError,
 } = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/config");
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.send(users))
-    .catch(() => res.status(defaultError).send({ defaultErrorMessage }));
-};
-
 const getCurrentUser = (req, res) => {
-  const { userId } = req.params._id;
+  const { userId } = req.user._id;
 
   User.findById(userId)
     .orFail()
@@ -33,7 +28,7 @@ const getCurrentUser = (req, res) => {
           .status(idNotFound)
           .send({ message: "An error has occurred with the requested ID." });
       } else {
-        res.status(defaultError).send({ defaultErrorMessage });
+        res.status(defaultError).send({ message: defaultErrorMessage });
       }
     });
 };
@@ -46,29 +41,23 @@ const createUser = (req, res) => {
       .status(invalidData)
       .send({ message: "An email address is required." });
   }
-
-  return User.findOne({ email })
-    .select("+password")
-    .then((existingEmail) => {
-      if (existingEmail) {
-        throw new Error("Email already exists");
-      }
-      return bcrypt.hash(password, 10);
-    })
-    .then((hash) =>
-      User.create({ name, avatar, email, password: hash })
-        .then((user) => res.send({ data: user }))
-        .catch((err) => {
-          console.error(err);
-          if (err.name === "ValidationError" || err.name === "CastError") {
-            res
-              .status(invalidData)
-              .send({ message: "An error has occurred creating user." });
-          } else {
-            res.status(defaultError).send({ defaultErrorMessage });
-          }
-        })
-    );
+  return bcrypt.hash(password, 10).then((hash) =>
+    User.create({ name, avatar, email, password: hash })
+      .then((user) =>
+        res.send({ name: user.name, avatar: user.avatar, email: user.email })
+      )
+      .catch((err) => {
+        if (err.code === 11000) {
+          res.status(conflictError).send({ message: "Email already exists." });
+        } else if (err.name === "ValidationError" || err.name === "CastError") {
+          res
+            .status(invalidData)
+            .send({ message: "An error has occurred creating user." });
+        } else {
+          res.status(defaultError).send({ message: defaultErrorMessage });
+        }
+      })
+  );
 };
 
 const login = (req, res) => {
@@ -92,13 +81,13 @@ const login = (req, res) => {
           .status(unauthorizedError)
           .send({ message: "Incorrect email or password." });
       } else {
-        res.status(defaultError).send({ defaultErrorMessage });
+        res.status(defaultError).send({ message: defaultErrorMessage });
       }
     });
 };
 
 const updateUserProfile = (req, res) => {
-  const { userId } = req.params._id;
+  const { userId } = req.user._id;
   const { name, avatar } = req.body;
 
   User.findByIdAndUpdate(
@@ -109,19 +98,19 @@ const updateUserProfile = (req, res) => {
     .orFail()
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (
-        err.name === "DocumentNotFoundError" ||
-        err.name === "ValidationError"
-      ) {
+      if (err.name === "DocumentNotFoundError") {
         res.status(idNotFound).send({ message: "User not found." });
+      } else if (err.name === "ValidationError") {
+        res
+          .status(invalidData)
+          .send({ message: "Incorrect user information." });
       } else {
-        res.status(defaultError).send({ defaultErrorMessage });
+        res.status(defaultError).send({ message: defaultErrorMessage });
       }
     });
 };
 
 module.exports = {
-  getUsers,
   getCurrentUser,
   updateUserProfile,
   createUser,

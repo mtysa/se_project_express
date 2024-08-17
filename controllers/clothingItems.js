@@ -12,7 +12,7 @@ const getItems = (req, res) => {
     .then((items) => res.send({ data: items }))
     .catch((err) => {
       console.error(err);
-      res.status(defaultError).send({ defaultErrorMessage });
+      res.status(defaultError).send({ message: defaultErrorMessage });
     });
 };
 
@@ -26,37 +26,37 @@ const createItem = (req, res) => {
           .status(invalidData)
           .send({ message: "An error has occurred creating item." });
       } else {
-        res.status(defaultError).send({ defaultErrorMessage });
+        res.status(defaultError).send({ message: defaultErrorMessage });
       }
     });
 };
 
 const deleteItem = (req, res) => {
-  const { userId } = req.params._id;
+  const { userId } = req.user._id;
 
-  Item.findByIdAndDelete(req.params.itemId)
+  Item.findById(req.params.itemId)
     .orFail()
     .then((item) => {
       if (item.owner.toString() !== userId) {
         res
           .status(forbiddenError)
           .send({ message: "You do not have permission to delete this item." });
-      } else {
-        res.send(item);
       }
+      return Item.deleteOne().then(() =>
+        res.send({ message: "Item deleted successfully." })
+      );
     })
     .catch((err) => {
       if (err.name === "ValidationError" || err.name === "CastError") {
         res
           .status(invalidData)
           .send({ message: "An error has occurred deleting item." });
-      }
-      if (err.name === "DocumentNotFoundError") {
+      } else if (err.name === "DocumentNotFoundError") {
         res
           .status(idNotFound)
           .send({ message: "An error has occurred deleting item." });
       } else {
-        res.status(defaultError).send({ defaultErrorMessage });
+        res.status(defaultError).send({ message: defaultErrorMessage });
       }
     });
 };
@@ -75,13 +75,12 @@ const likeItem = (req, res) => {
         res
           .status(invalidData)
           .send({ message: "An error has occurred liking item." });
-      }
-      if (err.name === "DocumentNotFoundError") {
+      } else if (err.name === "DocumentNotFoundError") {
         res
           .status(idNotFound)
           .send({ message: "An error has occurred liking item." });
       } else {
-        res.status(defaultError).send({ defaultErrorMessage });
+        res.status(defaultError).send({ message: defaultErrorMessage });
       }
     });
 };
@@ -100,13 +99,12 @@ const unlikeItem = (req, res) => {
         res
           .status(invalidData)
           .send({ message: "An error has occurred unliking item." });
-      }
-      if (err.name === "DocumentNotFoundError") {
+      } else if (err.name === "DocumentNotFoundError") {
         res
           .status(idNotFound)
           .send({ message: "An error has occurred unliking item." });
       } else {
-        res.status(defaultError).send({ defaultErrorMessage });
+        res.status(defaultError).send({ message: defaultErrorMessage });
       }
     });
 };
