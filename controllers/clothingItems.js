@@ -32,19 +32,19 @@ const createItem = (req, res) => {
 };
 
 const deleteItem = (req, res) => {
-  const { userId } = req.user._id;
+  const userId = req.user._id;
 
   Item.findById(req.params.itemId)
     .orFail()
     .then((item) => {
       if (item.owner.toString() !== userId) {
-        res
+        return res
           .status(forbiddenError)
           .send({ message: "You do not have permission to delete this item." });
       }
-      return Item.deleteOne().then(() =>
-        res.send({ message: "Item deleted successfully." })
-      );
+      return item
+        .deleteOne()
+        .then(() => res.send({ message: "Item deleted successfully." }));
     })
     .catch((err) => {
       if (err.name === "ValidationError" || err.name === "CastError") {

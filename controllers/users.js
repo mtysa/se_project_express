@@ -12,7 +12,7 @@ const {
 const { JWT_SECRET } = require("../utils/config");
 
 const getCurrentUser = (req, res) => {
-  const { userId } = req.user._id;
+  const userId = req.user._id;
 
   User.findById(userId)
     .orFail()
@@ -76,7 +76,7 @@ const login = (req, res) => {
       });
     })
     .catch((err) => {
-      if (err.name === "ValidationError" || err.name === "CastError") {
+      if (err.message === "Incorrect email or password") {
         res
           .status(unauthorizedError)
           .send({ message: "Incorrect email or password." });
@@ -87,7 +87,7 @@ const login = (req, res) => {
 };
 
 const updateUserProfile = (req, res) => {
-  const { userId } = req.user._id;
+  const userId = req.user._id;
   const { name, avatar } = req.body;
 
   User.findByIdAndUpdate(
