@@ -4,6 +4,10 @@ The back-end project is focused on creating a server for the WTWR application. Y
 
 ## By Mustafa Ysa
 
+## Domain
+
+[wtwr.dob.jp]
+
 ## Intro
 
 This project demonstrates the back-end technologies used to power the WTWR application.
@@ -15,6 +19,8 @@ This project demonstrates the back-end technologies used to power the WTWR appli
 - MongoDB
 - Node.js
 - REST API
+- Google Cloud Computing Services
+- Postman
 
 ## Running the Project
 
