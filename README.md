@@ -6,7 +6,7 @@ The back-end project is focused on creating a server for the WTWR application. Y
 
 ## Domain
 
-[wtwr.dob.jp]
+https://wtwr.dob.jp
 
 ## Intro
 
