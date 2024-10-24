@@ -17,7 +17,7 @@ const routes = require("./routes");
 app.use(express.json());
 app.use(cors());
 app.use(requestLogger);
-//remove crash test after review
+// remove crash test after review
 app.get("/crash-test", () => {
   setTimeout(() => {
     throw new Error("Server will crash now");
